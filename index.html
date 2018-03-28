@@ -1,0 +1,29 @@
+<html>
+  <head>
+    <title>probando</title>
+    <meta charset="UTF-8">
+  </head>
+  <body>
+    <button id="myBtn" href="#">LED ON/OFF</button>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+     var socket = io('http://localhost:8080')
+     var $myBtn = document.querySelector('#myBtn')
+     $myBtn.addEventListener("click", function(){
+       socket.emit('clickToggle')
+       console.log("INSIDE")
+     })
+     console.log("OUTSIDE")
+
+     /*
+        console.log('data')
+        var socket = io('http://localhost:8080')
+        socket.on('news', function (data) {
+        console.log(data)
+        socket.emit('my other event', { my: 'data' })
+        })
+      */
+     
+    </script>
+  </body>
+</html>
