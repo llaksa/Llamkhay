@@ -36,27 +36,27 @@ board.on("ready", function() {
     this.analogWrite(PinIN1, value / 4)  // analogRead values go from 0 to 1023, analogWrite values from 0 to 255
     this.analogWrite(PinIN2, 0)  // analogRead values go from 0 to 1023, analogWrite values from 0 to 255
     //console.log("==============================================")
-    //newPos    = encoderPos
+    newPos    = encoderPos
     //console.log(newPos)
-    //newTime   = new Date() + 1
+    newTime   = new Date()
     //console.log(newTime)
-    oldTime   = new Date()
     velocity1 = (newPos - oldPos) * 10000 / (newTime - oldTime)
     oldPos    = newPos
+    oldTime   = newTime
     //console.log(oldPos)
-    console.log(oldTime)
+    //console.log(oldTime)
     //console.log(newTime - oldTime)
-      //console.log(velocity1)
-      //console.log("==============================================")
+    //console.log(velocity1)
+    //console.log("==============================================")
 
-      //console.log((oldPos - newPos)*10000000)
-      x1 = x0
-      x0 = velocity1
-      y0 = 0.0006281 * x1 + 0.9994 * y1
-      y1 = y0
+    //console.log((oldPos - newPos)*10000000)
+    x1 = x0
+    x0 = velocity1
+    y0 = 0.0549 * x1 + 0.945 * y1
+    //y0 = 0.0006281 * x1 + 0.9994 * y1
+    y1 = y0
 
-      console.log(y0)
-    }
+    console.log(Math.floor(y0))
   }) // read the input pin
 
   //setInterval(() => {
@@ -70,10 +70,9 @@ board.on("ready", function() {
     } else {
       this.digitalWrite (LED, 0)
     }
-    */}
-    console.log(newTime)
-    newTime = new Date()
-    newPos = encoderPos++
+    */
+    //console.log(newTime)
+    encoderPos++
   })
 
 })
