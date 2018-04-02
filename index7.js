@@ -5,10 +5,15 @@ board.on("ready", function() {
   const LED      = 13 // pin 13
   const PULSE    = 2  // pin 2
 
+  // MOTOR
+  let analogPin  = 3  // potentiometer connected to analog pin A3
+  let PinIN1     = 10 // pin 9
+  let PinIN2     = 9  // pin10
+
   this.pinMode(LED, five.Pin.OUTPUT) // so we can update the LED
   this.digitalWrite (PULSE, 1);  // internal pull-up resistor
 
-  let newTime
+  let newTime    = 0
   let oldTime    = 0
   let encoderPos = 0
   let newPos     = 0
@@ -16,41 +21,59 @@ board.on("ready", function() {
 
   let velocity1
 
-  let out0       = 0
-  let out1
-
-  // MOTOR
-  let analogPin  = 3  // potentiometer connected to analog pin A3
-  let val        = 0  // variable to store the read value
-  let PinIN1     = 10 // pin 9
-  let PinIN2     = 9  // pin10
+  let x0       = 0
+  let x1
+  let y0
+  let y1       = 0
 
   var sensor = new five.Sensor.Digital(2)
 
+  this.pinMode(PinIN1, five.Pin.PWM)
+  this.pinMode(PinIN2, five.Pin.PWM)
+  this.pinMode(analogPin, five.Pin.ANALOG)
+
+  this.analogRead(analogPin, value => {
+    this.analogWrite(PinIN1, value / 4)  // analogRead values go from 0 to 1023, analogWrite values from 0 to 255
+    this.analogWrite(PinIN2, 0)  // analogRead values go from 0 to 1023, analogWrite values from 0 to 255
+    //console.log("==============================================")
+    //newPos    = encoderPos
+    //console.log(newPos)
+    //newTime   = new Date() + 1
+    //console.log(newTime)
+    oldTime   = new Date()
+    velocity1 = (newPos - oldPos) * 10000 / (newTime - oldTime)
+    oldPos    = newPos
+    //console.log(oldPos)
+    console.log(oldTime)
+    //console.log(newTime - oldTime)
+      //console.log(velocity1)
+      //console.log("==============================================")
+
+      //console.log((oldPos - newPos)*10000000)
+      x1 = x0
+      x0 = velocity1
+      y0 = 0.0006281 * x1 + 0.9994 * y1
+      y1 = y0
+
+      console.log(y0)
+    }
+  }) // read the input pin
+
+  //setInterval(() => {
+
+  //}, 1)
+
   sensor.on("change", function() {
-    console.log(this.value)
-    if (this.digitalRead(PULSE, value => {return value}) == 1) {
+    /*
+    if (this.digitalRead(PULSE, val => {return value}) == 1) {
       this.digitalWrite(LED, 1)
     } else {
       this.digitalWrite (LED, 0)
     }
-
-    encoderPos++
+    */}
+    console.log(newTime)
+    newTime = new Date()
+    newPos = encoderPos++
   })
-
-  out1      = out0;
-
-  newPos    = encoderPos
-  newTime   = new Date()
-  velocity1 = (newPos - oldPos) * 1000 / (newTime - oldTime)
-  oldPos    = newPos
-  oldTime   = newTime
-
-  val = this.analogRead(analogPin, value => { return value / 4 }) // read the input pin
-  this.analogWrite(PinIN1, val)  // analogRead values go from 0 to 1023, analogWrite values from 0 to 255
-  this.analogWrite(PinIN2, 0)  // analogRead values go from 0 to 1023, analogWrite values from 0 to 255
-
-  out0 = 0.00626*velocity1
-  out0 = out0 + 0.99373*out1
 
 })
