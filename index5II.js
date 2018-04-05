@@ -37,18 +37,16 @@ board.on("ready", function() {
   })
 
   async function both (motorNum, pwmNum) {
-    let entry = Math.round(Math.random()) * pwmNum
-    let output = Math.round(out % 180)
+    motors[motorNum].fwd(pwmNum)
+    motors[1 - motorNum].rev(pwmNum)
 
-    motors[motorNum].fwd(entry)
-    motors[1 - motorNum].rev(entry)
-
+    let entry = pwmNum
 
     if (dir == true) { // guardando datos según el sentido de giro
-      await fs.appendFile('outputPos.txt', `\n${output}`, () => console.log(`Angular position: ${output}`))
+      await fs.appendFile('outputPos.txt', `\n${out % 190}`, () => console.log(`Angular position: ${out % 190}`))
       await fs.appendFile('entryPos.txt', `\n${entry}`, () => console.log(`PWM: ${entry}`) )
     } else {
-      await fs.appendFile('outputNeg.txt', `\n${output}`, () => console.log(`Angular position: ${output}`))
+      await fs.appendFile('outputNeg.txt', `\n${out % 190}`, () => console.log(`Angular position: ${out % 190}`))
       await fs.appendFile('entryNeg.txt', `\n${entry}`, () => console.log(`PWM: ${entry}`) )
     }
 
@@ -70,7 +68,6 @@ board.on("ready", function() {
     await fs.unlink('entryNeg.txt', function (err) {})
 
     for (let i = 0; i < 1500; i++) {
-      console.log(i)
       dir = true
       await both(0, 255)
       await delay()
@@ -85,7 +82,6 @@ board.on("ready", function() {
     await fs.unlink('entryNeg.txt', function (err) {})
 
     for (let i = 0; i < 1500; i++) {
-      console.log(i)
       dir = false
       await both(1, 255)
       await delay()
