@@ -5,8 +5,6 @@ const board = new five.Board()
 let y0 = 0
 let out
 let dir
-let entryPrev = 1,1111
-let outputPrev = 1,1111
 let i = 0
 
 board.on("ready", function() {
@@ -18,7 +16,7 @@ board.on("ready", function() {
   imu.on("change", function() {
   //  console.log("=========================")
     y0 = 0.0549*this.gyro.yaw.angle + y0*0.945
-    output = Math.round(y0*100 % 180)/100
+    output = Math.round(100 * (y0 % 180)) / 100
   //  console.log("=========================")
   })
 
@@ -45,44 +43,14 @@ board.on("ready", function() {
     motors[motorNum].fwd(entry)
     motors[1 - motorNum].rev(entry)
 
-    if (entry == 0 && entryPrev == 0 && output == outputPrev) {
-      switch (dir) {
-        case true:
-          await fs.appendFile('outputPos.txt', `\n${output}`, () => console.log(`Angular position: ${output}`))
-          await fs.appendFile('entryPos.txt', `\n${entry}`, () => console.log(`PWM: ${entry}`) )
-          i++
-          break
-        case false:
-          await fs.appendFile('outputNeg.txt', `\n${output}`, () => console.log(`Angular position: ${output}`))
-          await fs.appendFile('entryNeg.txt', `\n${entry}`, () => console.log(`PWM: ${entry}`) )
-          i++
-          break
-      }
-    } else if (entry == 255 && entryPrev == 255 && output != outputPrev) {
-      switch (dir) {
-        case true:
-          await fs.appendFile('outputPos.txt', `\n${output}`, () => console.log(`Angular position: ${output}`))
-          await fs.appendFile('entryPos.txt', `\n${entry}`, () => console.log(`PWM: ${entry}`) )
-          i++
-          break
-        case false:
-          await fs.appendFile('outputNeg.txt', `\n${output}`, () => console.log(`Angular position: ${output}`))
-          await fs.appendFile('entryNeg.txt', `\n${entry}`, () => console.log(`PWM: ${entry}`) )
-          i++
-          break
-      }
-    }
-
-    /*
     if (dir == true) { // guardando datos según el sentido de giro
-      if ()
-      await fs.appendFile('outputPos.txt', `\n${output}`, () => console.log(`Angular position: ${output}`))
-      await fs.appendFile('entryPos.txt', `\n${entry}`, () => console.log(`PWM: ${entry}`) )
+      await fs.appendFile('outN.txt', `\n${output}`, () => console.log(`Angular position: ${output}`))
+      await fs.appendFile('inpN.txt', `\n${entry}`, () => console.log(`PWM: ${entry}`) )
     } else {
-      await fs.appendFile('outputNeg.txt', `\n${output}`, () => console.log(`Angular position: ${output}`))
-      await fs.appendFile('entryNeg.txt', `\n${entry}`, () => console.log(`PWM: ${entry}`) )
+      await fs.appendFile('outP.txt', `\n${output}`, () => console.log(`Angular position: ${output}`))
+      await fs.appendFile('inpP.txt', `\n${entry}`, () => console.log(`PWM: ${entry}`) )
     }
-    */
+    i++
 
     board.wait(100, function () {
       motors.stop()
@@ -91,7 +59,7 @@ board.on("ready", function() {
 
   function delay () {
     return new Promise(resolve => {
-      setTimeout(resolve, 300)
+      setTimeout(resolve, 200)
     })
   }
 
@@ -105,7 +73,6 @@ board.on("ready", function() {
       await both(0, 255)
       await delay()
     }
-
   }
 
   async function finalA () {
