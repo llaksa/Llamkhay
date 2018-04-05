@@ -1,78 +1,91 @@
+const fs = require('fs')
 const five = require("johnny-five")
 const board = new five.Board()
 
+let y0 = 0
+let out
+let dir
+
 board.on("ready", function() {
-  const LED      = 13 // pin 13
-  const PULSE    = 2  // pin 2
+  let imu = new five.IMU({
+    controller: "MPU6050"
+    //freq: 100000      // optional
+  });
 
-  // MOTOR
-  let analogPin  = 3  // potentiometer connected to analog pin A3
-  let PinIN1     = 10 // pin 9
-  let PinIN2     = 9  // pin10
-
-  this.pinMode(LED, five.Pin.OUTPUT) // so we can update the LED
-  this.digitalWrite (PULSE, 1);  // internal pull-up resistor
-
-  let newTime    = 0
-  let oldTime    = 0
-  let encoderPos = 0
-  let newPos     = 0
-  let oldPos     = 0
-
-  let velocity1
-
-  let x0       = 0
-  let x1
-  let y0
-  let y1       = 0
-
-  var sensor = new five.Sensor.Digital(2)
-
-  this.pinMode(PinIN1, five.Pin.PWM)
-  this.pinMode(PinIN2, five.Pin.PWM)
-  this.pinMode(analogPin, five.Pin.ANALOG)
-
-  this.analogRead(analogPin, value => {
-    this.analogWrite(PinIN1, value / 4)  // analogRead values go from 0 to 1023, analogWrite values from 0 to 255
-    this.analogWrite(PinIN2, 0)  // analogRead values go from 0 to 1023, analogWrite values from 0 to 255
-    //console.log("==============================================")
-    newPos    = encoderPos
-    //console.log(newPos)
-    newTime   = new Date()
-    //console.log(newTime)
-    velocity1 = (newPos - oldPos) * 10000 / (newTime - oldTime)
-    oldPos    = newPos
-    oldTime   = newTime
-    //console.log(oldPos)
-    //console.log(oldTime)
-    //console.log(newTime - oldTime)
-    //console.log(velocity1)
-    //console.log("==============================================")
-
-    //console.log((oldPos - newPos)*10000000)
-    x1 = x0
-    x0 = velocity1
-    y0 = 0.0549 * x1 + 0.945 * y1
-    //y0 = 0.0006281 * x1 + 0.9994 * y1
-    y1 = y0
-
-    console.log(Math.floor(y0))
-  }) // read the input pin
-
-  //setInterval(() => {
-
-  //}, 1)
-
-  sensor.on("change", function() {
-    /*
-    if (this.digitalRead(PULSE, val => {return value}) == 1) {
-      this.digitalWrite(LED, 1)
-    } else {
-      this.digitalWrite (LED, 0)
-    }
-    */
-    //console.log(newTime)
-    encoderPos++
+  imu.on("change", function() {
+  //  console.log("=========================")
+    y0 = 0.0549*this.gyro.yaw.angle + y0*0.945
+    out = Math.round(y0*100)/100
+  //  console.log("=========================")
   })
+
+  /*
+     Motor A: PWM 9, dir 8
+     Motor B: PWM 6, dir 5
+   */
+  const motors = new five.Motors([
+    { pins: { dir: 8, pwm: 9 }, invertPWM: true },
+    { pins: { dir: 7, pwm: 6}, invertPWM: true }
+  ])
+
+  board.repl.inject({
+    motors: motors,
+    both: both,
+    delay: delay,
+    finalH: finalH,
+    finalA: finalA
+  })
+
+  async function both (motorNum, pwmNum) {
+    motors[motorNum].fwd(pwmNum)
+    motors[1 - motorNum].rev(pwmNum)
+
+    let entry = pwmNum
+
+    if (dir == true) { // guardando datos según el sentido de giro
+      await fs.appendFile('outputPos.txt', `\n${out % 190}`, () => console.log(`Angular position: ${out % 190}`))
+      await fs.appendFile('entryPos.txt', `\n${entry}`, () => console.log(`PWM: ${entry}`) )
+    } else {
+      await fs.appendFile('outputNeg.txt', `\n${out % 190}`, () => console.log(`Angular position: ${out % 190}`))
+      await fs.appendFile('entryNeg.txt', `\n${entry}`, () => console.log(`PWM: ${entry}`) )
+    }
+
+    board.wait(100, function () {
+      motors.stop()
+    })
+  }
+
+  function delay () {
+    return new Promise(resolve => {
+      setTimeout(resolve, 300)
+    })
+  }
+
+  async function finalH () {
+    await fs.unlink('outputPos.txt', function (err) {})
+    await fs.unlink('outputNeg.txt', function (err) {})
+    await fs.unlink('entryPos.txt', function (err) {})
+    await fs.unlink('entryNeg.txt', function (err) {})
+
+    for (let i = 0; i < 1500; i++) {
+      await dir = true
+      await both(0, 255)
+      await delay()
+    }
+
+  }
+
+  async function finalA () {
+    await fs.unlink('outputPos.txt', function (err) {})
+    await fs.unlink('outputNeg.txt', function (err) {})
+    await fs.unlink('entryPos.txt', function (err) {})
+    await fs.unlink('entryNeg.txt', function (err) {})
+
+    for (let i = 0; i < 1500; i++) {
+      await dir = false
+      await both(1, 255)
+      await delay()
+    }
+  }
 
 })
