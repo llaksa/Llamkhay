@@ -40,7 +40,8 @@ board.on("ready", function() {
     lanzar: lanzar,
     grabar: grabar,
     grabarOne: grabarOne,
-    todo: todo
+    todo: todo,
+    anti: anti
   })
 
   async function both (motorNum) {
@@ -164,6 +165,31 @@ board.on("ready", function() {
     entry = 200
     dir = false
     await lanzar()
+  }
+
+  let error0
+  let error1 = 0
+  let error2 = 0
+  async function anti (grades) {
+    error0 = grades - output
+    let pid0 = -14290.1 * error2 + 28576 * error1 - 14290.1 * error0
+    error2 = error1
+    error1 = error0
+
+    motorNum = 0
+
+    motors[motorNum].fwd(pid0)
+    motors[1 - motorNum].rev(pid0)
+
+    board.wait(1, function () {
+      motors.stop()
+    })
+  }
+
+  async function control (sp) {
+    setInterval(() => {
+      anti(sp)
+    }, 10)
   }
 
 })
