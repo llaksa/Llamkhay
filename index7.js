@@ -7,6 +7,7 @@ let dir
 let output
 let i = 0
 let milqui
+let motorNum
 
 board.on("ready", function() {
   let imu = new five.IMU({
@@ -14,13 +15,18 @@ board.on("ready", function() {
     //freq: 100000      // optional
   });
 
-  imu.on("change", function() {
+  imu.on("change", async function() {
   //  console.log("=========================")
     //y0 = 0.0549*this.gyro.yaw.angle + y0*0.945
     //output = Math.round(100 * y0) / 100
     output = Math.round(100 * (this.gyro.yaw.angle)) / 100
-    // console.log(output)
-    control(50)
+
+    await controll(50)
+
+    if (setted) {
+      await motors.stop()
+    }
+
   //  console.log("=========================")
   })
 
@@ -40,10 +46,12 @@ board.on("ready", function() {
     grabar: grabar,
     grabarOne: grabarOne,
     todo: todo,
-    control: control
+    controll: controll,
+    moveIt: moveIt,
+    stopIt: stopIt
   })
 
-  function delay (time) {
+  async function delay (time) {
     return new Promise(resolve => {
       setTimeout(resolve, time)
     })
@@ -88,38 +96,96 @@ board.on("ready", function() {
     await lanzar()
   }
 
+  let error1p = 0
+  let error2p = 0
+  let pid1p = 0
+
+  let error1n = 0
+  let error2n = 0
+  let pid1n = 0
+
   let error0
-  let error1 = 0
-  let error2 = 0
-  async function control (setPoint) {
+  let pid0
+
+  let setted
+
+  async function controll (setPoint) {
     error0 = setPoint - output
-    console.log(error0)
+    setted = error0 < 1 && error0 > -1
 
-    if (error0 < 0.1 || error0 > -0.1) {
-      motors.stop()
-    }
+    if (error0 < 0) {
 
-    if (setPoint < 0) {
+      // PI para negatives errors
+      pid0 = pid1n + 0.002682 * error0 - 0.002682 * error1n
+
       // PID para negatives setpoints
-      let pid0 = -14290.1 * error2 + 28576 * error1 - 14290.1 * error0
+      // pid0 = -14290.1 * error2 + 28576 * error1 - 14290.1 * error0
       motorNum = 0
+
+      //error2 = error1
+      error1n = error0
+      pid1n = pid0
+
+      let entry = pid0 * 255
+
+      // cancelar los positives errors y pid
+      error1p = 0
+      error2p = 0
+      pid1p = 0
+
     } else {
+      // PI para positives errors
+      pid0 = pid1p + 0.001883 * error0 - 0.001883 * error1p
+
       // PID para positives setpoints
-      let pid0 = 30537.4 * error2 - 61082 * error1 + 30537.4 * error0
+      // pid0 = 30537.4 * error2 - 61082 * error1 + 30537.4 * error0
       motorNum = 1
+
+      //error2 = error1
+      error1p = error0
+      pid1p = pid0
+
+      let entry = pid0 * 255
+
+      // cancelar los negatives errors y pid
+      error1n = 0
+      error2n = 0
+      pid1n = 0
     }
 
-    error2 = error1
-    error1 = error0
 
-    if (pid0 > 255) {
-      pid0 = 255
-    } else if (pid0 < 0) {
-      pid0 = 0
+    if (entry > 255) {
+      entry = 255
+    } else if (entry < 150 && entry >=0) {
+      entry = 150
+    } else if (entry < 0) {
+      entry = 0
     }
 
-    motors[motorNum].fwd(pid0)
-    motors[1 - motorNum].rev(pid0)
+    await delay(1)
+
+    console.log("==================================================")
+    console.log(`Output   : ${output}`)
+    console.log(`Error    : ${error0}`)
+    console.log(`PID      : ${pid0*255}`)
+    console.log(`entry    : ${entry}`)
+    console.log(`MotorNum : ${motorNum}`)
+    console.log(`Setted   : ${setted}`)
+    console.log("==================================================")
+  }
+
+  async function moveIt () {
+    await motors[motorNum].fwd(pid0)
+    await motors[1 - motorNum].rev(pid0)
+  }
+
+  async function stopIt () {
+    let setted = error0 < 0.1 && error0 > -0.1
+
+    console.log(setted)
+    if (setted) {
+    await motors.stop()
+    }
   }
 
 })
