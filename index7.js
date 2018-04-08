@@ -19,6 +19,8 @@ board.on("ready", function() {
     //y0 = 0.0549*this.gyro.yaw.angle + y0*0.945
     //output = Math.round(100 * y0) / 100
     output = Math.round(100 * (this.gyro.yaw.angle)) / 100
+    // console.log(output)
+    control(50)
   //  console.log("=========================")
   })
 
@@ -38,7 +40,6 @@ board.on("ready", function() {
     grabar: grabar,
     grabarOne: grabarOne,
     todo: todo,
-    anti: anti,
     control: control
   })
 
@@ -90,26 +91,35 @@ board.on("ready", function() {
   let error0
   let error1 = 0
   let error2 = 0
-  async function anti (grades) {
-    error0 = grades - output
-    let pid0 = -14290.1 * error2 + 28576 * error1 - 14290.1 * error0
+  async function control (setPoint) {
+    error0 = setPoint - output
+    console.log(error0)
+
+    if (error0 < 0.1 || error0 > -0.1) {
+      motors.stop()
+    }
+
+    if (setPoint < 0) {
+      // PID para negatives setpoints
+      let pid0 = -14290.1 * error2 + 28576 * error1 - 14290.1 * error0
+      motorNum = 0
+    } else {
+      // PID para positives setpoints
+      let pid0 = 30537.4 * error2 - 61082 * error1 + 30537.4 * error0
+      motorNum = 1
+    }
+
     error2 = error1
     error1 = error0
 
-    motorNum = 0
+    if (pid0 > 255) {
+      pid0 = 255
+    } else if (pid0 < 0) {
+      pid0 = 0
+    }
 
     motors[motorNum].fwd(pid0)
     motors[1 - motorNum].rev(pid0)
-
-    board.wait(1, function () {
-      motors.stop()
-    })
-  }
-
-  async function control (sp) {
-    setInterval(() => {
-      anti(sp)
-    }, 10)
   }
 
 })
