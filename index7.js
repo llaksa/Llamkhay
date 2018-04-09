@@ -60,10 +60,9 @@ board.on("ready", function() {
     }
   }
 
-  async function lanzar () {
-    // motorOpt: 0 (horario) || motorOpt: 1 (antihorario)
-
-    motorOpt = 0
+  async function lanzar (motorOpt) {
+    /* motorOpt : 0 (horario)
+       motorOpt : 1 (antihorario) */
 
     motors[motorOpt].fwd(input)
     motors[1 - motorOpt].rev(input)
@@ -73,12 +72,12 @@ board.on("ready", function() {
     })
   }
 
-  async function todo () {
+  async function todo (motorOpt) {
     input = 0
     grabar()
     await delay(500)
     input = 200
-    await lanzar()
+    await lanzar(motorOpt)
   }
 
   let error1p = 0
