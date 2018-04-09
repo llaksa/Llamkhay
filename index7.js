@@ -1,48 +1,30 @@
-const fs = require('fs')
-const five = require("johnny-five")
+const fs    = require('fs')
+const five  = require("johnny-five")
 const board = new five.Board()
 
-let y0 = 0
-let dir
-let output
-let i = 0
-let milqui
-let motorNum
-
 board.on("ready", function() {
+
   let imu = new five.IMU({
     controller: "MPU6050"
-    //freq: 100000      // optional
+    // freq: 100000 // optional
   });
 
-  imu.on("change", async function() {
-  //  console.log("=========================")
-    //y0 = 0.0549*this.gyro.yaw.angle + y0*0.945
-    //output = Math.round(100 * y0) / 100
-    output = Math.round(100 * (this.gyro.yaw.angle)) / 100
-
-    await controll(50)
-
-    if (getted) {
-      await motors.stop()
-      called = false
-    } else if (getted == false && called == false) {
-      called = true
-      await motors[motorNum].fwd(entry)
-      await motors[1 - motorNum].rev(entry)
-      //await moveIt()
-    }
-  //  console.log("=========================")
-  })
-
-  /*
-     Motor A: PWM 9, dir 8
-     Motor B: PWM 6, dir 5
-   */
+  /* Motor A: PWM 9, dir 8
+     Motor B: PWM 6, dir 5 */
   const motors = new five.Motors([
     { pins: { dir: 8, pwm: 9 }, invertPWM: true },
     { pins: { dir: 7, pwm: 6}, invertPWM: true }
   ])
+
+  let output
+  let motorOpt
+
+  imu.on("change", async function() {
+    output = Math.round(100 * (this.gyro.yaw.angle)) / 100
+
+    let setPoint = 50
+    await controll(setPoint)
+  })
 
   board.repl.inject({
     motors: motors,
@@ -53,7 +35,6 @@ board.on("ready", function() {
     todo: todo,
     controll: controll,
     moveIt: moveIt,
-    stopIt: stopIt
   })
 
   async function delay (time) {
@@ -63,12 +44,12 @@ board.on("ready", function() {
   }
 
   async function grabarOne () {
-    if (dir == true) { // guardando datos según el sentido de giro
-      await fs.appendFile('outN.txt', `\n${output}`, () => console.log(`Angular position: ${output}`))
-      await fs.appendFile('inpN.txt', `\n${entry}`, () => console.log(`PWM: ${entry}`) )
-    } else {
-      await fs.appendFile('outP.txt', `\n${output}`, () => console.log(`Angular position: ${output}`))
-      await fs.appendFile('inpP.txt', `\n${entry}`, () => console.log(`PWM: ${entry}`) )
+    if (motorOpt == 0) { // guardando datos según el sentido de giro
+      await fs.appendFile('horaOutput.txt', `\n${output}`, () => console.log(`Angular position: ${output}`))
+      await fs.appendFile('horaInput.txt', `\n${input}`, () => console.log(`PWM: ${input}`) )
+    } else if (motorOpt == 1) {
+      await fs.appendFile('antiOutput.txt', `\n${output}`, () => console.log(`Angular position: ${output}`))
+      await fs.appendFile('antiInput.txt', `\n${input}`, () => console.log(`PWM: ${input}`) )
     }
   }
 
@@ -80,11 +61,12 @@ board.on("ready", function() {
   }
 
   async function lanzar () {
-    // dir tru con motorNum 0 || dir false con motorNum 1
-    motorNum = 0
+    // motorOpt: 0 (horario) || motorOpt: 1 (antihorario)
 
-    motors[motorNum].fwd(entry)
-    motors[1 - motorNum].rev(entry)
+    motorOpt = 0
+
+    motors[motorOpt].fwd(input)
+    motors[1 - motorOpt].rev(input)
 
     board.wait(15000, function () {
       motors.stop()
@@ -92,12 +74,10 @@ board.on("ready", function() {
   }
 
   async function todo () {
-    entry = 0
-    dir = true
+    input = 0
     grabar()
     await delay(500)
-    entry = 200
-    dir = false
+    input = 200
     await lanzar()
   }
 
@@ -113,7 +93,7 @@ board.on("ready", function() {
   let pid0
 
   let getted
-  let entry
+  let input
 
   async function controll (setPoint) {
     error0 = setPoint - output
@@ -124,11 +104,8 @@ board.on("ready", function() {
       // PI para negatives errors
       pid0 = pid1n + 0.002682 * error0 - 0.002682 * error1n
 
-      // PID para negatives setpoints
-      // pid0 = -14290.1 * error2 + 28576 * error1 - 14290.1 * error0
-      motorNum = 0
+      motorOpt = 0
 
-      //error2 = error1
       error1n = error0
       pid1n = pid0
 
@@ -141,11 +118,8 @@ board.on("ready", function() {
       // PI para positives errors
       pid0 = pid1p + 0.001883 * error0 - 0.001883 * error1p
 
-      // PID para positives setpoints
-      // pid0 = 30537.4 * error2 - 61082 * error1 + 30537.4 * error0
-      motorNum = 1
+      motorOpt = 1
 
-      //error2 = error1
       error1p = error0
       pid1p = pid0
 
@@ -155,24 +129,33 @@ board.on("ready", function() {
       pid1n = 0
     }
 
-    entry = Math.abs(pid0) * 255
+    input = Math.abs(pid0) * 255
 
-    if (entry > 255) {
-      entry = 255
-    } else if (entry < 150 && getted == false) {
-      entry = 200
+    if (input > 255) {
+      input = 255
+    } else if (input < 150 && getted == false) {
+      input = 200
     } else if (getted = true) {
-      entry = 0
+      input = 0
     }
 
     await delay(1)
+
+    if (getted) {
+      await motors.stop()
+      called = false
+    } else if (getted == false && called == false) {
+      called = true
+      await motors[motorOpt].fwd(input)
+      await motors[1 - motorOpt].rev(input)
+    }
 
     console.log("==================================================")
     console.log(`Output   : ${output}`)
     console.log(`Error    : ${error0}`)
     console.log(`PID      : ${pid0}`)
-    console.log(`entry    : ${entry}`)
-    console.log(`MotorNum : ${motorNum}`)
+    console.log(`Input    : ${input}`)
+    console.log(`MotorOpt : ${motorOpt}`)
     console.log(`Getted   : ${getted}`)
     console.log(`Called   : ${called}`)
     console.log("==================================================")
@@ -181,17 +164,8 @@ board.on("ready", function() {
   let called = false
   async function moveIt () {
     called = true
-    await motors[motorNum].fwd(entry)
-    await motors[1 - motorNum].rev(entry)
-  }
-
-  async function stopIt () {
-    if (getted) {
-      await motors.stop()
-      called = false
-    } else if (getted == false && called == false) {
-      await moveIt()
-    }
+    await motors[motorOpt].fwd(input)
+    await motors[1 - motorOpt].rev(input)
   }
 
 })
