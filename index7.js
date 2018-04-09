@@ -9,7 +9,7 @@ let i = 0
 let milqui
 let motorNum
 
-board.on("ready", async function() {
+board.on("ready", function() {
   let imu = new five.IMU({
     controller: "MPU6050"
     //freq: 100000      // optional
@@ -21,7 +21,7 @@ board.on("ready", async function() {
     //output = Math.round(100 * y0) / 100
     output = Math.round(100 * (this.gyro.yaw.angle)) / 100
 
-    await controll(-50)
+    await controll(50)
 
     if (getted) {
       await motors.stop()
@@ -160,7 +160,7 @@ board.on("ready", async function() {
     if (entry > 255) {
       entry = 255
     } else if (entry < 150 && getted == false) {
-      entry = 250
+      entry = 200
     } else if (getted = true) {
       entry = 0
     }
