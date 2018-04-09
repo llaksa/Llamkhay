@@ -9,7 +9,7 @@ let i = 0
 let milqui
 let motorNum
 
-board.on("ready", function() {
+board.on("ready", async function() {
   let imu = new five.IMU({
     controller: "MPU6050"
     //freq: 100000      // optional
@@ -21,12 +21,17 @@ board.on("ready", function() {
     //output = Math.round(100 * y0) / 100
     output = Math.round(100 * (this.gyro.yaw.angle)) / 100
 
-    await controll(50)
+    await controll(-50)
 
-    if (setted) {
+    if (getted) {
       await motors.stop()
+      called = false
+    } else if (getted == false && called == false) {
+      called = true
+      await motors[motorNum].fwd(entry)
+      await motors[1 - motorNum].rev(entry)
+      //await moveIt()
     }
-
   //  console.log("=========================")
   })
 
@@ -107,11 +112,12 @@ board.on("ready", function() {
   let error0
   let pid0
 
-  let setted
+  let getted
+  let entry
 
   async function controll (setPoint) {
     error0 = setPoint - output
-    setted = error0 < 1 && error0 > -1
+    getted = error0 < 1 && error0 > -1
 
     if (error0 < 0) {
 
@@ -125,8 +131,6 @@ board.on("ready", function() {
       //error2 = error1
       error1n = error0
       pid1n = pid0
-
-      let entry = pid0 * 255
 
       // cancelar los positives errors y pid
       error1p = 0
@@ -145,20 +149,19 @@ board.on("ready", function() {
       error1p = error0
       pid1p = pid0
 
-      let entry = pid0 * 255
-
       // cancelar los negatives errors y pid
       error1n = 0
       error2n = 0
       pid1n = 0
     }
 
+    entry = Math.abs(pid0) * 255
 
     if (entry > 255) {
       entry = 255
-    } else if (entry < 150 && entry >=0) {
-      entry = 150
-    } else if (entry < 0) {
+    } else if (entry < 150 && getted == false) {
+      entry = 250
+    } else if (getted = true) {
       entry = 0
     }
 
@@ -167,24 +170,27 @@ board.on("ready", function() {
     console.log("==================================================")
     console.log(`Output   : ${output}`)
     console.log(`Error    : ${error0}`)
-    console.log(`PID      : ${pid0*255}`)
+    console.log(`PID      : ${pid0}`)
     console.log(`entry    : ${entry}`)
     console.log(`MotorNum : ${motorNum}`)
-    console.log(`Setted   : ${setted}`)
+    console.log(`Getted   : ${getted}`)
+    console.log(`Called   : ${called}`)
     console.log("==================================================")
   }
 
+  let called = false
   async function moveIt () {
-    await motors[motorNum].fwd(pid0)
-    await motors[1 - motorNum].rev(pid0)
+    called = true
+    await motors[motorNum].fwd(entry)
+    await motors[1 - motorNum].rev(entry)
   }
 
   async function stopIt () {
-    let setted = error0 < 0.1 && error0 > -0.1
-
-    console.log(setted)
-    if (setted) {
-    await motors.stop()
+    if (getted) {
+      await motors.stop()
+      called = false
+    } else if (getted == false && called == false) {
+      await moveIt()
     }
   }
 
