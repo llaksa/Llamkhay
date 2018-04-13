@@ -5,7 +5,9 @@ const board = new five.Board()
 board.on("ready", function() {
 
   let imu = new five.IMU({
-    controller: "MPU6050"
+    controller: "MPU6050",
+    address: 0x68, // optional
+    freq: 10000      // optional
     // freq: 100000 // optional
   });
 
@@ -19,11 +21,95 @@ board.on("ready", function() {
   let output
   let motorOpt
 
+  let p0 = {x: 0, y: 0, z: 0}
+  let p1 = {}
+
+  let v0 = {x: 0, y: 0, z: 0}
+  let v1 = {}
+
+  let a0 = {x: 0, y: 0, z: 0}
+  let a1 = {}
+
+  let u0 = {x: 0, y: 0, z: 0}
+  let y0 = {x: 0, y: 0, z: 0}
+  let y1 = {}
+
+  let varVolt = 1;  // среднее отклонение (ищем в excel)
+  let varProcess = 1; // скорость реакции на изменение (подбирается вручную)
+  let Pc = 0.0;
+  let G = 0.0;
+  let P = 1.0;
+  let Xp = 0.0;
+  let Zp = 0.0;
+  let Xe = 0.0;
+
   imu.on("change", async function() {
+    let t1 = new Date()
+
+    y1 = y0
+
+    p1 = p0
+    v1 = v0
+    a1 = a0
+
     output = Math.round(100 * (this.gyro.yaw.angle)) / 100
 
     let setPoint = 50
     await controll(setPoint)
+
+    console.log("Thermometer");
+    console.log("  celsius      : ", this.thermometer.celsius);
+    console.log("  fahrenheit   : ", this.thermometer.fahrenheit);
+    console.log("  kelvin       : ", this.thermometer.kelvin);
+    console.log("--------------------------------------");
+
+    console.log("Accelerometer");
+    console.log("  x            : ", this.accelerometer.x);
+    console.log("  y            : ", this.accelerometer.y);
+    console.log("  z            : ", this.accelerometer.z);
+    console.log("  pitch        : ", this.accelerometer.pitch);
+    console.log("  roll         : ", this.accelerometer.roll);
+    console.log("  acceleration : ", this.accelerometer.acceleration);
+    console.log("  inclination  : ", this.accelerometer.inclination);
+    console.log("  orientation  : ", this.accelerometer.orientation);
+    console.log("--------------------------------------");
+
+    console.log("Gyroscope");
+    console.log("  x            : ", this.gyro.x);
+    console.log("  y            : ", this.gyro.y);
+    console.log("  z            : ", this.gyro.z);
+    console.log("  pitch        : ", this.gyro.pitch);
+    console.log("  roll         : ", this.gyro.roll);
+    console.log("  yaw          : ", this.gyro.yaw);
+    console.log("  rate         : ", this.gyro.rate);
+    console.log("  isCalibrated : ", this.gyro.isCalibrated);
+    console.log("--------------------------------------");
+
+    console.log("===========================================")
+    let t0 = new Date()
+    let aux = 0.5 * (t0 - t1)
+
+    u0 = this.gyro.rate
+
+    y0 = {
+      x: filter(u0.x),
+      y: filter(u0.y),
+      z: filter(u0.z),
+    }
+
+    a0 = y0
+
+    v0.x = v1.x + aux * (a0.x - a1.x)
+    v0.y = v1.y + aux * (a0.y - a1.y)
+    v0.z = v1.z + aux * (a0.z - a1.z)
+
+    p0.x = p1.x + aux * (v0.x + v1.x)
+    p0.y = p1.y + aux * (v0.y + v1.y)
+    p0.z = p1.z + aux * (v0.z + v1.z)
+
+    console.log(p0)
+    console.log(y0)
+    console.log("===========================================")
   })
 
   board.repl.inject({
@@ -35,7 +121,18 @@ board.on("ready", function() {
     todo: todo,
     controll: controll,
     moveIt: moveIt,
+    filter: filter
   })
+
+  function filter (val) {  //функция фильтрации
+    Pc = P + varProcess;
+    G = Pc/(Pc + varVolt);
+    P = (1-G)*Pc;
+    Xp = Xe;
+    Zp = Xp;
+    Xe = G*(val-Zp)+Xp; // "фильтрованное" значение
+    return(Xe);
+  }
 
   async function delay (time) {
     return new Promise(resolve => {
@@ -149,6 +246,7 @@ board.on("ready", function() {
       await motors[1 - motorOpt].rev(input)
     }
 
+    /*
     console.log("==================================================")
     console.log(`Output   : ${output}`)
     console.log(`Error    : ${error0}`)
@@ -158,6 +256,7 @@ board.on("ready", function() {
     console.log(`Getted   : ${getted}`)
     console.log(`Called   : ${called}`)
     console.log("==================================================")
+    */
   }
 
   let called = false
