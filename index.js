@@ -6,7 +6,7 @@ var state  = false
 
 
 
-server.listen(8080)
+server.listen(3000)
 
 app.get('/', function (req, res) {
   res.sendFile(__dirname + '/index.html')
