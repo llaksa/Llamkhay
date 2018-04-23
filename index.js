@@ -17,16 +17,16 @@ app.get('/', function (req, res) {
 var board = new five.Board()
 
 board.on("ready", function() {
-  var led = new five.Led(13)
+  var led = new five.Led(11)
 
   io.on('connection', function (socket) {
 
     socket.on('clickToggle', function () {
       state = !state
       if (state) {
-        led.on()
+        led.pulse()
       } else {
-        led.off()
+        led.stop().off()
       }
     })
   })

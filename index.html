@@ -7,8 +7,7 @@
     <button id="myBtn" href="#">LED ON/OFF</button>
     <script src="/socket.io/socket.io.js"></script>
     <script>
-     //var socket = io('http://localhost:8080')
-     var socket = io()
+     var socket = io('http://localhost:3000')
      var $myBtn = document.querySelector('#myBtn')
      $myBtn.addEventListener("click", function(){
        socket.emit('clickToggle')
@@ -24,7 +23,6 @@
         socket.emit('my other event', { my: 'data' })
         })
       */
-     
     </script>
   </body>
 </html>
