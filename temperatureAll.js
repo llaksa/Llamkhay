@@ -9,17 +9,23 @@ board.on("ready", function () {
   let zero_cross = false
   let freqStep   = '65u'
 
-  const timer    = NanoTimer()
-  const zcSensor = new five.Sensor.Digital(2)
-  const multi    = new five.Multi({
+  const AC_pin        = 9
+  const timer         = NanoTimer()
+  const potenciometer = new five.Sensor("A0")
+  const zetaCross     = new five.Sensor.Digital(2)
+  const multi         = new five.Multi({
     controller: "BME280"
   })
 
-  zcSensor.on("change", function() {
+  this.pinMode(AC_pin, five.Pin.OUTPUT)
+
+  zetaCross.on("change", function() {
+    console.log('ZETA CROSS')
     console.log(this.value)
-    zero_cross = true;               // set the boolean to true to tell our dimming function that a zero cross has occured
-    i=0;
-    digitalWrite(AC_pin, LOW);       // turn off TRIAC (and AC)
+    console.log('===========')
+    zero_cross = true               // set the boolean to true to tell our dimming function that a zero cross has occured
+    i = 0
+    board.digitalWrite(AC_pin, 0)       // turn off TRIAC (and AC)
   })
 
   timer.serInterval(dim_check, '', freqStep)
@@ -27,23 +33,28 @@ board.on("ready", function () {
   function dim_check() {
     if(zero_cross == true) {
       if(i>=dim) {
-        digitalWrite(AC_pin, HIGH); // turn on light
-        i=0;  // reset time step counter
-        zero_cross = false; //reset zero cross detection
+        board.digitalWrite(AC_pin, 1) // turn on light
+        i = 0  // reset time step counter
+        zero_cross = false //reset zero cross detection
       }
       else {
-        i++; // increment time step counter
+        i++ // increment time step counter
       }
     }
   }
 
-  void loop() {
-    val = analogRead(analogPotPin) / 8;
-    dim = 128 - val;
-    Serial.println(val);
-    delay(18);
-  }
+  let val = 0
+  let dim = 128
+  // Value from potenciometer pin
+  potenciometer.on("change", function() {
+    val = this.value / 8
+    dim = 128 - val
+    console.log('POTENCIOMETER')
+    console.log(dim)
+    console.log('===========')
+  })
 
+  /*
   multi.on("data", function() {
     console.log("Thermometer")
     console.log("  celsius      : ", this.thermometer.celsius)
@@ -64,6 +75,7 @@ board.on("ready", function () {
     console.log("  meters       : ", this.altimeter.meters)
     console.log("--------------------------------------")
   })
+  */
 
   async function myData () {
     await fs.unlink('outputTemperature.txt', function (err) {})
