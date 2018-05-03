@@ -2,56 +2,80 @@ const fs        = require('fs')
 const NanoTimer = require('nanotimer')
 const five      = require('johnny-five')
 
+let          i = 0
+let zero_cross = false
+const freqStep = '800u'
+let        val = 0
+let        dim = 128
+
+const halfWave = 8333
+let     potVal = 0
+
 const board = new five.Board()
 
 board.on("ready", function () {
-  let i          = 0
-  let zero_cross = false
-  let freqStep   = '65u'
 
   const AC_pin        = 9
-  const timer         = NanoTimer()
+  const timer         = new NanoTimer()
   const potenciometer = new five.Sensor("A0")
   const zetaCross     = new five.Sensor.Digital(2)
   const multi         = new five.Multi({
     controller: "BME280"
   })
 
-  this.pinMode(AC_pin, five.Pin.OUTPUT)
+  this.pinMode(AC_pin, five.Pin.PWM)
 
-  zetaCross.on("change", function() {
-    console.log('ZETA CROSS')
-    console.log(this.value)
-    console.log('===========')
+  zetaCross.on("change", async function () {
     zero_cross = true               // set the boolean to true to tell our dimming function that a zero cross has occured
-    i = 0
-    board.digitalWrite(AC_pin, 0)       // turn off TRIAC (and AC)
+    await acLow()
+    zero_cross = false
+    await acHigh()
+    //i = 0
+    //await board.analogWrite(AC_pin, 0)       // turn off TRIAC (and AC)
   })
 
-  timer.serInterval(dim_check, '', freqStep)
+  async function acLow () {
+    timer.clearTimeout()
+    timer.setTimeout(() => {
+      board.analogWrite(AC_pin, 0)
+    }, '', `${Math.round(halfWave * potVal)}u`)
+  }
 
-  function dim_check() {
+  async function acHigh () {
+    timer.clearTimeout()
+    timer.setTimeout(() => {
+      board.analogWrite(AC_pin, 255)
+    }, '', `${Math.round(halfWave * (1 - potVal))}u`)
+  }
+
+  //timer.setInterval(dim_check, '', freqStep)
+
+  async function dim_check() {
+    console.log(`zero cross : ${zero_cross}`)
+    console.log(`i          : ${i}`)
+    console.log(`dim        : ${dim}`)
+    console.log(`val        : ${val}`)
     if(zero_cross == true) {
       if(i>=dim) {
-        board.digitalWrite(AC_pin, 1) // turn on light
+        //console.log('mayor que dim')
+        await board.analogWrite(AC_pin, 255) // turn on light
         i = 0  // reset time step counter
         zero_cross = false //reset zero cross detection
       }
       else {
+        //console.log('i++')
+        //console.log(i)
         i++ // increment time step counter
       }
     }
   }
 
-  let val = 0
-  let dim = 128
   // Value from potenciometer pin
   potenciometer.on("change", function() {
-    val = this.value / 8
-    dim = 128 - val
-    console.log('POTENCIOMETER')
-    console.log(dim)
-    console.log('===========')
+    //val = Math.round(this.value / 8)
+    //dim = 128 - val
+    potVal = Math.round(this.fscaleTo(0, 1) * 100) / 100
+    console.log(potVal)
   })
 
   /*
@@ -75,7 +99,6 @@ board.on("ready", function () {
     console.log("  meters       : ", this.altimeter.meters)
     console.log("--------------------------------------")
   })
-  */
 
   async function myData () {
     await fs.unlink('outputTemperature.txt', function (err) {})
@@ -85,5 +108,6 @@ board.on("ready", function () {
 
   async function myControll () {
   }
+  */
 
 })
