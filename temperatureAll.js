@@ -4,11 +4,11 @@ const five      = require('johnny-five')
 
 let          i = 0
 let zero_cross = false
-const freqStep = '800u'
+const freqStep = '65u'
 let        val = 0
 let        dim = 128
 
-const halfWave = 8333
+const halfWave = 10
 let     potVal = 0
 
 const board = new five.Board()
@@ -18,7 +18,11 @@ board.on("ready", function () {
   const AC_pin        = 9
   const timer         = new NanoTimer()
   const potenciometer = new five.Sensor("A0")
-  const zetaCross     = new five.Sensor.Digital(2)
+  const zetaCross     = new five.Sensor({
+    pin: 2,
+    type: "digital",
+    freq: 1
+  })
   const multi         = new five.Multi({
     controller: "BME280"
   })
@@ -26,26 +30,35 @@ board.on("ready", function () {
   this.pinMode(AC_pin, five.Pin.PWM)
 
   zetaCross.on("change", async function () {
+    //timer.clearTimeout()
     zero_cross = true               // set the boolean to true to tell our dimming function that a zero cross has occured
-    await acLow()
-    zero_cross = false
-    await acHigh()
     //i = 0
     //await board.analogWrite(AC_pin, 0)       // turn off TRIAC (and AC)
   })
 
+  async function both () {
+    if (zero_cross == true) {
+      await acLow()
+      zero_cross = false
+    } else {
+      await acHigh()
+    }
+  }
+
+  timer.setInterval(both, '', '11s')
+
   async function acLow () {
-    timer.clearTimeout()
+    //timer.clearTimeout()
     timer.setTimeout(() => {
       board.analogWrite(AC_pin, 0)
-    }, '', `${Math.round(halfWave * potVal)}u`)
+    }, '', `${Math.round(halfWave * potVal)}s`)
   }
 
   async function acHigh () {
-    timer.clearTimeout()
+    //timer.clearTimeout()
     timer.setTimeout(() => {
       board.analogWrite(AC_pin, 255)
-    }, '', `${Math.round(halfWave * (1 - potVal))}u`)
+    }, '', `${Math.round(halfWave * (1 - potVal))}s`)
   }
 
   //timer.setInterval(dim_check, '', freqStep)
@@ -75,7 +88,6 @@ board.on("ready", function () {
     //val = Math.round(this.value / 8)
     //dim = 128 - val
     potVal = Math.round(this.fscaleTo(0, 1) * 100) / 100
-    console.log(potVal)
   })
 
   /*
