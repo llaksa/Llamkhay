@@ -7,6 +7,10 @@ board.on("ready", function() {
   });
 
   imu.on("change", function() {
+    console.log("  celsius      : ", this.thermometer.celsius);
+
+    /*
+    imu.on("change", function() {
     console.log("Thermometer");
     console.log("  celsius      : ", this.thermometer.celsius);
     console.log("  fahrenheit   : ", this.thermometer.fahrenheit);
@@ -34,6 +38,8 @@ board.on("ready", function() {
     console.log("  rate         : ", this.gyro.rate);
     console.log("  isCalibrated : ", this.gyro.isCalibrated);
     console.log("--------------------------------------");
+    */
+
   });
 
 });
