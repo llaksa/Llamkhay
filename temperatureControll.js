@@ -11,7 +11,7 @@ board.on("ready", function() {
   let pwm
   let y1 = 0
 
-  //this.pinMode(9, five.Pin.PWM)
+  this.pinMode(9, five.Pin.PWM)
   var potPin = new five.Sensor("A5")
   potPin.on("change", async function () {
     pwm = Math.floor(this.value / 4)
@@ -40,10 +40,10 @@ board.on("ready", function() {
   })
 
   async function controllIt (x) {
-    if (x < 100) {
-      relay.open()
-    } else {
+    if (x < 10) {
       relay.close()
+    } else {
+      relay.open()
       board.analogWrite(9, x)
     }
   }
