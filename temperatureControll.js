@@ -34,10 +34,10 @@ board.on("ready", function() {
   this.repl.inject({
     temp : temp,
     relay : relay,
-    controll : controll
+    controllIt : controllIt
   })
 
-  async function controllSignal (x) {
+  async function controllIt (x) {
     if (x < 100) {
       relay.open()
     } else {
