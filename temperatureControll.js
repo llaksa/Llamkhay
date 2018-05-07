@@ -5,30 +5,32 @@ board.on("ready", function() {
 
   var relay = new five.Relay({
     pin: 8,
-    type: "NC"
+    type: "NO"
   })
 
   let pwm
   let y1 = 0
 
-  this.pinMode(9, five.Pin.PWM)
-  var potPin = new five.Sensor("A1")
-  potPin.on("change", function() {
-    board.analogWrite(9, this.value / 4)
+  //this.pinMode(9, five.Pin.PWM)
+  var potPin = new five.Sensor("A5")
+  potPin.on("change", async function () {
+    pwm = Math.floor(this.value / 4)
+    await controllIt(pwm)
+    console.log("pot: " + pwm)
   })
 
   var temp = new five.Thermometer({
     controller: "LM35",
     pin: "A0",
-    freq: 100
+    freq: 25
   })
 
-  temp.on("data", async function() {
+  temp.on("data", function() {
     let y0 = this.celsius * 0.0609 + y1 * 0.9391
     let out = Math.round(y0)
-    console.log(Math.round(out))
+    //console.log("temp: " + Math.round(out))
+    //console.log(this.celsius)
     y1 = y0
-    //await controll(pwm)
   })
 
   this.repl.inject({
@@ -42,11 +44,10 @@ board.on("ready", function() {
       relay.open()
     } else {
       relay.close()
-      this.analogWrite(9, x)
+      board.analogWrite(9, x)
     }
   }
 
   async function pidController () {}
 
 })
-

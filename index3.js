@@ -12,7 +12,7 @@ board.on("ready", function() {
   let y1 = 0
   temp.on("data", function() {
     let y0 = this.celsius * 0.0609 + y1 * 0.9391
-    console.log(y0)
+    console.log(Math.round(y0))
     y1 = y0
   })
 
