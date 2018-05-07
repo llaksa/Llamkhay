@@ -37,7 +37,7 @@ board.on("ready", function() {
     controll : controll
   })
 
-  async function controll (x) {
+  async function controllSignal (x) {
     if (x < 100) {
       relay.open()
     } else {
@@ -45,6 +45,8 @@ board.on("ready", function() {
       this.analogWrite(9, x)
     }
   }
+
+  async function pidController () {}
 
 })
 
