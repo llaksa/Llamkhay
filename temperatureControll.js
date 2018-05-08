@@ -105,9 +105,6 @@ board.on("ready", async function() {
     if (k > 30 == 0) {
       err32 = err31
       err31 = sp - output
-      err
-    } else {
-      err32 = err31
     }
   }
   await pwmFan(0)
