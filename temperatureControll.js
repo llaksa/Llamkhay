@@ -32,8 +32,8 @@ board.on("ready", async function() {
 
   temp.on("data", function() {
     let y0 = this.celsius * 0.0609 + y1 * 0.9391
-    output = y0
-    //console.log("temp: " + Math.round(output))
+    output = Math.round(y0)
+    console.log("temp: " + output)
     //console.log(this.celsius)
     y1 = y0
   })
@@ -64,10 +64,8 @@ board.on("ready", async function() {
     await fs.unlink('temperature.txt', () => console.log(`Temperature: ${output}`))
     await fs.unlink('pwm.txt', () => console.log(`PWM: ${input}`))
     for (let k = 0; k < 5000; k++) {
-      let date = new Date()
       await grabarOne()
       await delay(25)
-      console.log("time: " + (date - new Date()))
     }
   }
 
