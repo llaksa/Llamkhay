@@ -92,7 +92,24 @@ board.on("ready", async function() {
     await pwmFan(input)
   }
 
-  async function pidController () {}
+  let pi1   = 0
+  let pi2   = pi1
+  let err31 = 0
+  let err32 = err31
+  let k     = 0
+  async function pidController (sp) {
+    let pi0   = 1.961 * pi1 - 0.9609 * pi2 + 5.539e-10 * err31 + 5.466e-10 * err32
+    pi2       = pi1
+    pi1       = pi0
+    k++
+    if (k > 30 == 0) {
+      err32 = err31
+      err31 = sp - output
+      err
+    } else {
+      err32 = err31
+    }
+  }
   await pwmFan(0)
 
 })
