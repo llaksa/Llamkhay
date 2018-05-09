@@ -37,7 +37,7 @@ board.on("ready", async function() {
     //console.log("temp: " + output)
     //console.log(this.celsius)
     y1 = y0
-    //pidController(18)
+    pidController(17)
   })
 
   this.repl.inject({
@@ -99,12 +99,12 @@ board.on("ready", async function() {
   }
 
   let pi0  = pi1  = 0
-  let err0 = err1 = 0
+  let err1 = 0
   async function pidController (sp) {
-    err1 = err0
-    err0 = output - sp
-    let pi0 = pi1 + 52.1 * err0 - 52.09 * err1
-    pi1  = pi0
+    err1     = err0
+    let err0 = output - sp
+    let pi0  = pi1 + 52.1 * err0 - 52.09 * err1
+    pi1      = pi0
     console.log("pi0  :  " + pi0)
     console.log("err0 :  " + err0)
     if (err0 > 0) {
