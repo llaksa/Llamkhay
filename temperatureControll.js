@@ -98,56 +98,20 @@ board.on("ready", async function() {
     await pwmFan(input)
   }
 
-  let pi1 = pi2 = 0
-  let err0 = err1 = err2 = err3 = err4 = err5 = err6 = err7 = err8 = err9 = err10 = err11 = err12 = err13 = err14 =
-    err15 = err16 = err17 = err18 = err19 = err20 = err21 = err22 = err23 = err24 = err25 = err26 = err27 = err28 =
-    err29 = err30 = err31 = err32 = 0
-  let k = 0
+  let pi0  = pi1  = 0
+  let err0 = err1 = 0
   async function pidController (sp) {
-    k++
-      let pi0 = 1.961 * pi1 - 0.9609 * pi2 + 5.539e-10 * err31 + 5.466e-10 * err32
-    console.log("pi0:  " + pi0)
-    console.log("err0: " + err0)
-    pi2  = pi1
-    pi1  = pi0
+    err1 = err0
     err0 = output - sp
+    let pi0 = pi1 + 52.1 * err0 - 52.09 * err1
+    pi1  = pi0
+    console.log("pi0  :  " + pi0)
+    console.log("err0 :  " + err0)
     if (err0 > 0) {
       await pwmFan(pi0)
     } else {
       await pwmFan(0)
     }
-    err1 = err0
-    err2 = err1
-    err3 = err2
-    err4 = err3
-    err5 = err4
-    err6 = err5
-    err7 = err6
-    err8 = err7
-    err9 = err8
-    err10 = err9
-    err11 = err10
-    err12 = err11
-    err13 = err12
-    err14 = err13
-    err15 = err14
-    err16 = err15
-    err17 = err16
-    err18 = err17
-    err19 = err18
-    err20 = err19
-    err21 = err20
-    err22 = err21
-    err23 = err22
-    err24 = err23
-    err25 = err24
-    err26 = err25
-    err27 = err26
-    err28 = err27
-    err29 = err28
-    err30 = err29
-    err31 = err30
-    err32 = err31
   }
 
   await pwmFan(0)
