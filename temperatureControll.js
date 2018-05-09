@@ -99,19 +99,22 @@ board.on("ready", async function() {
   }
 
   let pi0  = pi1  = 0
-  let err1 = 0
+  let err0 = err1 = 0
   async function pidController (sp) {
     err1     = err0
-    let err0 = output - sp
+    err0 = output - sp
     let pi0  = pi1 + 52.1 * err0 - 52.09 * err1
     pi1      = pi0
     console.log("pi0  :  " + pi0)
     console.log("err0 :  " + err0)
+    await pwmFan(pi0)
+    /*
     if (err0 > 0) {
       await pwmFan(pi0)
     } else {
       await pwmFan(0)
     }
+    */
   }
 
   await pwmFan(0)
