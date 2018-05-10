@@ -14,10 +14,11 @@ board.on("ready", async function() {
     y1 = y0
   })
 
-  const motor = new five.Motor({
+  var motor
+  motor = new five.Motor({
     pins: {
-      pwm: 8,
-      dir: 9
+      pwm: 9,
+      dir: 8
     }
   })
 
