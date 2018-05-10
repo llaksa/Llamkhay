@@ -2,20 +2,19 @@ var five = require("johnny-five")
 var board = new five.Board()
 
 board.on("ready", function() {
-  var proximity = new five.Proximity({
+  const proximity = new five.Proximity({
     controller: "HCSR04",
     pin: 7
   })
 
+  let y1
   proximity.on("data", function() {
     let y0 = this.cm * 0.0609 + y1 * 0.9391
     output = y0
     y1 = y0
   })
 
-  var motor
-
-  motor = new five.Motor({
+  const motor = new five.Motor({
     pins: {
       pwm: 8,
       dir: 9
@@ -87,6 +86,5 @@ board.on("ready", function() {
     console.log("err0 :  " + err0)
     await pwmPump(pi0)
   }
-
 
 })
