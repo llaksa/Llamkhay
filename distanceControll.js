@@ -1,7 +1,7 @@
 var five = require("johnny-five")
 var board = new five.Board()
 
-board.on("ready", function() {
+board.on("ready", async function() {
   const proximity = new five.Proximity({
     controller: "HCSR04",
     pin: 7
@@ -87,4 +87,5 @@ board.on("ready", function() {
     await pwmPump(pi0)
   }
 
+  await pwmPump(0)
 })
