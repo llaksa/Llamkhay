@@ -1,5 +1,6 @@
-var five = require("johnny-five")
-var board = new five.Board()
+const fs = require("fs")
+const five = require("johnny-five")
+const board = new five.Board()
 
 board.on("ready", async function() {
   const proximity = new five.Proximity({
@@ -7,20 +8,16 @@ board.on("ready", async function() {
     pin: 7
   })
 
-  let y1
+  let y1 = 0
   proximity.on("data", function() {
     let y0 = this.cm * 0.0609 + y1 * 0.9391
-    output = y0
+    output = this.cm
     y1 = y0
   })
 
-  var motor
-  motor = new five.Motor({
-    pins: {
-      pwm: 9,
-      dir: 8
-    }
-  })
+  const motor = new five.Motor(
+    { pins: { dir: 8, pwm: 9 }, invertPWM: true }
+  )
 
   board.repl.inject({
     motor: motor,
