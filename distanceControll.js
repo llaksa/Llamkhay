@@ -9,11 +9,12 @@ board.on("ready", async function() {
   })
 
   let y1 = 0
-  proximity.on("data", function() {
+  proximity.on("data", async function() {
     let y0 = this.cm * 0.0609 + y1 * 0.9391
     output = 22 - y0
-    console.log(output)
+    //console.log(output)
     y1 = y0
+    await pidController(15)
   })
 
   const motor = new five.Motor(
@@ -142,8 +143,8 @@ board.on("ready", async function() {
   let err0 = err1 = 0
   async function pidController (sp) {
     err1     = err0
-    err0 = output - sp
-    let pi0  = pi1 + 52.1 * err0 - 52.09 * err1
+    err0 = sp - err0
+    let pi0  = pi1 + 15.63 * err0 - 5.017e-06 * err1
     pi1      = pi0
     console.log("pi0  :  " + pi0)
     console.log("err0 :  " + err0)
