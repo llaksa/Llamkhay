@@ -11,7 +11,8 @@ board.on("ready", async function() {
   let y1 = 0
   proximity.on("data", function() {
     let y0 = this.cm * 0.0609 + y1 * 0.9391
-    output = y0
+    output = 21.7 - y0
+    //console.log(output)
     y1 = y0
   })
 
