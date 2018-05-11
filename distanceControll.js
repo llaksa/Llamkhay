@@ -11,7 +11,7 @@ board.on("ready", async function() {
   let y1 = 0
   proximity.on("data", function() {
     let y0 = this.cm * 0.0609 + y1 * 0.9391
-    output = 22 - this.cm
+    output = 22 - y0
     console.log(output)
     y1 = y0
   })
@@ -22,6 +22,7 @@ board.on("ready", async function() {
 
   board.repl.inject({
     motor: motor,
+    pwmPump: pwmPump,
     savingData : savingData
   })
 
@@ -67,8 +68,71 @@ board.on("ready", async function() {
 
     input = 255
     await pwmPump(input)
+    await delay(10000)
 
-    await delay(122000)
+    input = 0
+    await pwmPump(input)
+    await delay(5000)
+    input = 255
+    await pwmPump(input)
+    await delay(10000)
+
+    input = 0
+    await pwmPump(input)
+    await delay(5000)
+    input = 255
+    await pwmPump(input)
+    await delay(10000)
+
+    input = 0
+    await pwmPump(input)
+    await delay(5000)
+    input = 255
+    await pwmPump(input)
+    await delay(10000)
+
+    input = 0
+    await pwmPump(input)
+    await delay(5000)
+    input = 255
+    await pwmPump(input)
+    await delay(10000)
+
+    input = 0
+    await pwmPump(input)
+    await delay(5000)
+    input = 255
+    await pwmPump(input)
+    await delay(10000)
+
+    input = 0
+    await pwmPump(input)
+    await delay(5000)
+    input = 255
+    await pwmPump(input)
+    await delay(10000)
+
+    input = 0
+    await pwmPump(input)
+    await delay(5000)
+    input = 255
+    await pwmPump(input)
+    await delay(10000)
+
+    input = 0
+    await pwmPump(input)
+    await delay(5000)
+    input = 255
+    await pwmPump(input)
+    await delay(10000)
+
+    input = 0
+    await pwmPump(input)
+    await delay(5000)
+    input = 255
+    await pwmPump(input)
+    await delay(10000)
+
     input = 0
     await pwmPump(input)
   }
