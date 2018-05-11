@@ -14,7 +14,7 @@ board.on("ready", async function() {
     output = 22 - y0
     //console.log(output)
     y1 = y0
-    //await pidController(8)
+    await pidController(7)
   })
 
   const motor = new five.Motor(
@@ -35,12 +35,12 @@ board.on("ready", async function() {
   }
 
   async function pwmPump (x) {
-    if (x < 90 || err0 < 0) {
-      motor.stop()
+    if (x < 200 || err0 < 0) {
+      motor.fwd(200)
     } else if (x > 255) {
       motor.fwd(255)
     } else {
-      motor.fwd(x)
+      motor.fwd(200)
     }
   }
 
@@ -148,7 +148,7 @@ board.on("ready", async function() {
     pi1      = pi0
     console.log("pi0  :  " + pi0)
     console.log("err0 :  " + err0)
-    await pwmPump(pi0)
+    await pwmPump(pi0 * 5)
   }
 
   await pwmPump(0)
