@@ -36,7 +36,7 @@ board.on("ready", async function() {
 
   async function pwmPump (x) {
     if (x < 200 || err0 < 0) {
-      motor.fwd(200)
+      motor.fwd(0)
     } else if (x > 255) {
       motor.fwd(255)
     } else {
