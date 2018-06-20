@@ -22,8 +22,8 @@ board.on("ready", async function() {
   )
 
   board.repl.inject({
-    motor: motor,
-    pwmPump: pwmPump,
+    motor : motor,
+    pwmPump : pwmPump,
     savingData : savingData
   })
 

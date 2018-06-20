@@ -1,2 +1,2 @@
 # Llamkhay
-Hardware projects
+Some middlewares for hardware projects
