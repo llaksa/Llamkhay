@@ -65,7 +65,7 @@ board.on("ready", async function() {
   }
 
   async function savingData () {
-    input = 0
+    let input = 0
     await pwmPump(input)
 
     grabar()
