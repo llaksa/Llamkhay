@@ -3,18 +3,23 @@ const five = require("johnny-five")
 const board = new five.Board()
 
 board.on("ready", async function() {
+  new five.Pin({
+    pin: 6,
+    type: "digital"
+  })
+
   const proximity = new five.Proximity({
     controller: "HCSR04",
-    pin: 7
+    pin: 6
   })
 
   let y1 = 0
   proximity.on("data", async function() {
     let y0 = this.cm * 0.0609 + y1 * 0.9391
-    output = 22 - y0
+    output = 12.1 - y0
     //console.log(output)
     y1 = y0
-    await pidController(7)
+    //await pidController(5)
   })
 
   const motor = new five.Motor(
@@ -36,11 +41,11 @@ board.on("ready", async function() {
 
   async function pwmPump (x) {
     if (x < 200 || err0 < 0) {
-      motor.fwd(0)
+      motor.stop(0)
     } else if (x > 255) {
       motor.fwd(255)
     } else {
-      motor.fwd(200)
+      motor.fwd(x)
     }
   }
 
