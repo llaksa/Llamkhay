@@ -3,21 +3,21 @@ const five = require("johnny-five")
 const board = new five.Board()
 
 board.on("ready", async function() {
-  new five.Pin({
+  /*new five.Pin({
     pin: 6,
     type: "digital"
-  })
+  })*/
 
   const proximity = new five.Proximity({
     controller: "HCSR04",
-    pin: 6
+    pin: 7
   })
 
   let y1 = 0
   proximity.on("data", async function() {
     let y0 = this.cm * 0.0609 + y1 * 0.9391
     output = 12.1 - y0
-    //console.log(output)
+    console.log(output)
     y1 = y0
     //await pidController(5)
   })
