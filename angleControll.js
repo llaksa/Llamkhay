@@ -4,10 +4,59 @@ const board = new five.Board()
 
 board.on("ready", function() {
 
+  const velocity = new five.Sensor({
+    pin: 4,
+    type: "digital"
+  })
+
+  let t1 = new Date() * 1
+  let n = 0
+  let vel0 = 0
+  let vel1 = 0
+  let tDif
+  velocity.on("change", function() {
+    //console.log("==============================")
+    //console.log("vel0: " + vel0)
+    n = n +1
+    if (n > 20) {
+      let t0 = new Date() * 1
+      tDif = t0 - t1
+      vel0 = 2100000 / (tDif)
+      //console.log("vel0: " + vel0)
+      t1 = t0
+      n = 0
+    }
+  })
+
+  setInterval(() => {
+    if (vel0 == vel1) {
+      vel0 = 0
+    }
+    //console.log("==============================")
+    //console.log("tDif: " + tDif)
+    //console.log("vel0: " + vel0)
+    console.log("n: " + n)
+    vel1 = vel0
+    /*
+    console.log("========================")
+    console.log("var de t: " + tDif)
+    console.log("t1: " + t1)
+    */
+  }, 50)
+
+  /*
+  setInterval(() => {
+    console.log("==============================")
+    console.log("vel0: " + vel0)
+  }, 10000)
+  */
+
+  /*
   let imu = new five.IMU({
     controller: "MPU6050"
     // freq: 100000 // optional
-  });
+  })
+  */
 
   /* Motor A: PWM 9, dir 8
      Motor B: PWM 6, dir 5 */
@@ -19,12 +68,14 @@ board.on("ready", function() {
   let output
   let motorOpt
 
+  /*
   imu.on("change", async function() {
     output = Math.round(100 * (this.gyro.yaw.angle)) / 100
 
     let setPoint = 50
     await controll(setPoint)
   })
+  */
 
   board.repl.inject({
     motors: motors,
