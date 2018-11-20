@@ -176,32 +176,34 @@ const exportExcelFile = async (req, res) => {
 
     if (theFile && (typeof theFile !== 'undefined')) {
 
-      await exec(`zip public/zip/oneDir.zip -r public/excel/${theFile}`, (error, stdout, stderr) => {
+      await exec(`cd public && zip zip/oneDir.zip -r excel/${theFile}`, (error, stdout, stderr) => {
         if (error) {
-          console.error(`exec error: ${error}`);
+          console.error(`exec error: ${error}`)
           return;
         }
-        console.log(`stdout: ${stdout}`);
-        console.log(`stderr: ${stderr}`);
+        console.log(`stdout: ${stdout}`)
+        console.log(`stderr: ${stderr}`)
+
+        let file = path.join(__dirname, '..', 'public', 'zip', 'oneDir.zip')
+        res.download(file, 'oneDir.zip')
       })
 
-      let file = path.join(__dirname, '..', 'public', 'zip', 'oneDir.zip')
-      res.download(file, 'oneDir.zip')
+
 
     } else {
 
       //res.send(`bienvenido ${theFile} `)
-      await exec('zip public/zip/manyDir.zip -r public/excel', (error, stdout, stderr) => {
+      await exec('cd public && zip zip/manyDir.zip -r excel', (error, stdout, stderr) => {
         if (error) {
-          console.error(`exec error: ${error}`);
+          console.error(`exec error: ${error}`)
           return;
         }
-        console.log(`stdout: ${stdout}`);
-        console.log(`stderr: ${stderr}`);
-      })
+        console.log(`stdout: ${stdout}`)
+        console.log(`stderr: ${stderr}`)
 
-      let files = path.join(__dirname, '..', 'public', 'zip', 'manyDir.zip')
-      res.download(files, 'manyDir.zip')
+        let files = path.join(__dirname, '..', 'public', 'zip', 'manyDir.zip')
+        res.download(files, 'manyDir.zip')
+      })
 
     }
 
